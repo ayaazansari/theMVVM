@@ -23,86 +23,57 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.GameFragmentBinding
 
-/**
- * Fragment where the game is played
- */
 class GameFragment : Fragment() {
 
     private lateinit var viewModel: GameViewModel
-
-    // TODO (01) Move over the word, score and wordList variables to the GameViewModel
-    // The current word
 
 
     private lateinit var binding: GameFragmentBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-
-        // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
                 inflater,
                 R.layout.game_fragment,
                 container,
                 false
         )
-
-        // Get the viewmodel
         Log.i("GameFragment", "Called ViewModelProvider")
         viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
 
         // update the UI
         binding.correctButton.setOnClickListener {
             viewModel.onCorrect()
-            updateScoreText()
             updateWordText()
         }
         binding.skipButton.setOnClickListener {
             viewModel.onSkip()
-            updateScoreText()
             updateWordText()
         }
-        updateScoreText()
+
+        viewModel.score.observe(this, Observer {newScore->
+            binding.scoreText.text = newScore.toString()
+        })
+
         updateWordText()
         return binding.root
 
     }
-
-    // TODO (02) Move over methods resetList, nextWord, onSkip and onCorrect to the GameViewModel
-    /**
-     * Resets the list of words and randomizes the order
-     */
-
-    /**
-     * Called when the game is finished
-     */
     private fun gameFinished() {
-        val action = GameFragmentDirections.actionGameToScore(viewModel.score)
+        val action = GameFragmentDirections.actionGameToScore(viewModel.score.value ?:0)
         findNavController(this).navigate(action)
     }
 
-    /**
-     * Moves to the next word in the list
-     */
-
-
-    /** Methods for buttons presses **/
-
-
-    /** Methods for updating the UI **/
-
-    // TODO (05) Update these methods to get word and score from the viewmodel
     private fun updateWordText() {
         binding.wordText.text = viewModel.word
 
     }
 
-    private fun updateScoreText() {
-        binding.scoreText.text = viewModel.score.toString()
-    }
+
 }
